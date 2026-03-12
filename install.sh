@@ -21,18 +21,23 @@ echo -e "${YELLOW}📦 Обновление системы...${NC}"
 apt update && apt upgrade -y
 
 echo -e "${YELLOW}📦 Установка необходимых пакетов...${NC}"
-apt install -y nginx php8.1-fpm php8.1-cli php8.1-curl php8.1-mbstring php8.1-json certbot python3-certbot-nginx git
+apt install -y nginx php-fpm php-cli php-curl php-mbstring php-json certbot python3-certbot-nginx git curl
+
+# Определяем версию PHP
+PHP_VERSION=$(php -r "echo PHP_MAJOR_VERSION.'.'.PHP_MINOR_VERSION;" 2>/dev/null || echo "7.4")
+echo -e "${GREEN}✅ Обнаружен PHP $PHP_VERSION${NC}"
 
 echo -e "${YELLOW}📁 Создание директорий...${NC}"
 mkdir -p /var/www/payment
-cd /var/www/payment
 
 # Копирование файлов проекта
 echo -e "${YELLOW}📋 Копирование файлов проекта...${NC}"
-if [ -d "public_html" ]; then
-    echo -e "${GREEN}✅ Файлы проекта уже существуют${NC}"
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+if [ -d "$SCRIPT_DIR/public_html" ]; then
+    cp -r "$SCRIPT_DIR/public_html" /var/www/payment/
+    echo -e "${GREEN}✅ Файлы проекта скопированы${NC}"
 else
-    echo -e "${RED}❌ Скопируйте папку public_html в /var/www/payment/${NC}"
+    echo -e "${RED}❌ Папка public_html не найдена в $SCRIPT_DIR${NC}"
     exit 1
 fi
 
@@ -153,7 +158,7 @@ server {
     # PHP обработка
     location ~ \.php$ {
         include snippets/fastcgi-php.conf;
-        fastcgi_pass unix:/var/run/php/php8.1-fpm.sock;
+        fastcgi_pass unix:/var/run/php/php${PHP_VERSION}-fpm.sock;
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         include fastcgi_params;
     }
